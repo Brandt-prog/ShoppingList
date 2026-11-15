@@ -1,6 +1,11 @@
 ﻿string? input = "";
-List<string> items = new List<string> { "milk", "eggs", "bread" };
-List<int> quantities = new List<int> { 2, 12, 2 };
+
+List<ShoppingItem> shoppingItems = new List<ShoppingItem>
+{
+    new ShoppingItem("milk", 2, 12.5),
+    new ShoppingItem("eggs", 1, 30),
+    new ShoppingItem("bread", 1, 25)
+};
 
 while (input != "6")
 {
@@ -10,19 +15,19 @@ while (input != "6")
     switch (input)
     {
         case "1":
-            AddItem(items, quantities);
+            AddItem(shoppingItems);
             break;
         case "2":
-            ShowList(items, quantities);
+            ShowList(shoppingItems);
             break;
         case "3":
-            RemoveItem(items, quantities);
+            RemoveItem(shoppingItems);
             break;
         case "4":
-            ShowTotals(items, quantities);
+            ShowTotals(shoppingItems);
             break;
         case "5":
-            Search(items, quantities);
+            Search(shoppingItems);
             break;
         case "6":
             Console.WriteLine("Bye!");
@@ -45,7 +50,7 @@ void PrintMenu()
     Console.Write("Choose: ");
 }
 
-void AddItem(List<string> it, List<int> q)
+void AddItem(List<ShoppingItem> it)
 {
     Console.Write("Item: ");
     string item = Console.ReadLine() ?? "";
@@ -56,12 +61,13 @@ void AddItem(List<string> it, List<int> q)
     }
     Console.Write("Quantity: ");
     int quantity = int.Parse(Console.ReadLine() ?? "0");
-    it.Add(item);
-    q.Add(quantity);
-    Console.WriteLine($"Added {quantity} x {item}");
+    Console.Write("Price: ");
+    double price = double.Parse(Console.ReadLine() ?? "");
+    it.Add(new ShoppingItem(item, quantity, price));
+    Console.WriteLine(it[it.Count - 1].Describe());
 }
 
-void ShowList(List<string> it, List<int> q)
+void ShowList(List<ShoppingItem> it)
 {
     if (it.Count == 0)
     {
@@ -70,11 +76,11 @@ void ShowList(List<string> it, List<int> q)
     }
     for (int i = 0; i < it.Count; i++)
     {
-        Console.WriteLine($"{i + 1}. {q[i]} x {it[i]}");
+        Console.WriteLine($"{i + 1}. {it[i].Describe()}");
     }
 }
 
-void RemoveItem(List<string> it, List<int> q)
+void RemoveItem(List<ShoppingItem> it)
 {
     Console.Write("Number to remove: ");
     int number = int.Parse(Console.ReadLine() ?? "");
@@ -83,17 +89,16 @@ void RemoveItem(List<string> it, List<int> q)
         Console.WriteLine("Invalid item number");
         return;
     }
-    Console.WriteLine($"Removed {q[number - 1]} x {it[number - 1]}");
+    Console.WriteLine($"Removed: {it[number - 1].Describe()}");
     it.RemoveAt(number - 1);
-    q.RemoveAt(number - 1);
 }
 
-void ShowTotals(List<string> it, List<int> q)
+void ShowTotals(List<ShoppingItem> it)
 {
-    Console.WriteLine($"Items: {it.Count}, total quantity: {q.Sum()}");
+    Console.WriteLine($"Items: {it.Count}, total quantity: {it.Sum(item => item.Quantity)}, total price: {it.Sum(item => item.Total)} kr");
 }
 
-void Search(List<string> it, List<int> q)
+void Search(List<ShoppingItem> it)
 {
     Console.Write("Search for: ");
     string search = Console.ReadLine() ?? "";
@@ -102,12 +107,43 @@ void Search(List<string> it, List<int> q)
         Console.WriteLine("Nothing to search for");
         return;
     }
-    string? found = it.FirstOrDefault(x => x.Contains(search));
+    ShoppingItem? found = it.FirstOrDefault(x => x.Name.Contains(search));
     if (found == null)
     {
         Console.WriteLine("Not Found");
         return;
     }
-    int index = it.IndexOf(found);
-    Console.WriteLine($"Found: {q[index]} x {found}");
+    Console.WriteLine($"Found: {found.Describe()}");
+}
+
+class ShoppingItem
+{
+    public string Name { get; set; } = "";
+
+    private int quantity;
+    public int Quantity
+    {
+        get { return quantity; }
+        set
+        {
+            if (value < 1) quantity = 1;
+            else { quantity = value; }
+        }
+    }
+
+    public double Price { get; set; }
+
+    public double Total => Price * Quantity;
+
+    public ShoppingItem(string name, int quantity, double price)
+    {
+        Name = name;
+        Quantity = quantity;
+        Price = price;
+    }
+
+    public string Describe()
+    {
+        return $"{Quantity} x {Name} = {Total} kr";
+    }
 }
