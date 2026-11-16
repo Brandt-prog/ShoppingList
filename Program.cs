@@ -60,9 +60,29 @@ void AddItem(List<ShoppingItem> it)
         return;
     }
     Console.Write("Quantity: ");
-    int quantity = int.Parse(Console.ReadLine() ?? "0");
+    int quantity;
+    string quantityText = Console.ReadLine() ?? "0";
+    if (int.TryParse(quantityText, out int parsedQuantity))
+    {
+        quantity = parsedQuantity;
+    }
+    else
+    {
+        Console.WriteLine("Not a valid number");
+        return;
+    }
     Console.Write("Price: ");
-    double price = double.Parse(Console.ReadLine() ?? "");
+    double price;
+    string priceText = Console.ReadLine() ?? "";
+    if (double.TryParse(priceText, out double parsedPrice))
+    {
+        price = parsedPrice;
+    }
+    else
+    {
+        Console.WriteLine("Not a valid number");
+        return;
+    }
     it.Add(new ShoppingItem(item, quantity, price));
     Console.WriteLine(it[it.Count - 1].Describe());
 }
@@ -83,7 +103,17 @@ void ShowList(List<ShoppingItem> it)
 void RemoveItem(List<ShoppingItem> it)
 {
     Console.Write("Number to remove: ");
-    int number = int.Parse(Console.ReadLine() ?? "");
+    int number;
+    string numberText = Console.ReadLine() ?? "";
+    if (int.TryParse(numberText, out int parsedNumber))
+    {
+        number = parsedNumber;
+    }
+    else
+    {
+        Console.WriteLine("Not a valid number");
+        return;
+    }
     if (number < 1 || number > it.Count)
     {
         Console.WriteLine("Invalid item number");
