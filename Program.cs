@@ -1,11 +1,7 @@
 ﻿string? input = "";
+List<ShoppingItem> shoppingItems = new List<ShoppingItem>();
 
-List<ShoppingItem> shoppingItems = new List<ShoppingItem>
-{
-    new ShoppingItem("milk", 2, 12.5),
-    new ShoppingItem("eggs", 1, 30),
-    new ShoppingItem("bread", 1, 25)
-};
+LoadItems(shoppingItems);
 
 while (input != "6")
 {
@@ -31,10 +27,44 @@ while (input != "6")
             break;
         case "6":
             Console.WriteLine("Bye!");
+            SaveItems(shoppingItems);
             break;
         default:
             Console.WriteLine("Invalid choice");
             break;
+    }
+}
+
+void SaveItems(List<ShoppingItem> it)
+{
+    File.WriteAllText("shopping.txt", "");
+    foreach (ShoppingItem item in it)
+    {
+        File.AppendAllText("shopping.txt", $"{item.Name};{item.Quantity};{item.Price}\n");
+    }
+}
+
+void LoadItems(List<ShoppingItem> it)
+{
+    try
+    {
+        string[] lines = File.ReadAllLines("shopping.txt");
+        foreach (string line in lines)
+        {
+            string[] parts = line.Split(';');
+            if (parts.Length == 3 && int.TryParse(parts[1], out int parsedQuantity) && double.TryParse(parts[2], out double parsedPrice))
+            {
+                it.Add(new ShoppingItem(parts[0], parsedQuantity, parsedPrice));
+            }
+            else
+            {
+                Console.WriteLine($"Skipped: {line}");
+            }
+        }
+    }
+    catch (FileNotFoundException)
+    {
+        Console.WriteLine("No items found");
     }
 }
 
