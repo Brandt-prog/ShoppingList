@@ -3,7 +3,7 @@ List<ShoppingItem> shoppingItems = new List<ShoppingItem>();
 
 LoadItems(shoppingItems);
 
-while (input != "6")
+while (input != "7")
 {
     PrintMenu();
     input = Console.ReadLine();
@@ -26,6 +26,9 @@ while (input != "6")
             Search(shoppingItems);
             break;
         case "6":
+            ShowCategories(shoppingItems);
+            break;
+        case "7":
             Console.WriteLine("Bye!");
             SaveItems(shoppingItems);
             break;
@@ -35,12 +38,40 @@ while (input != "6")
     }
 }
 
+void ShowCategories(List<ShoppingItem> it)
+{
+    Dictionary<string, double> counting = new Dictionary<string, double>();
+    if (it.Count != 0)
+    {
+        foreach (ShoppingItem item in it)
+        {
+            if (counting.ContainsKey(item.Category))
+            {
+                counting[item.Category] += item.Total;
+            }
+            else
+            {
+                counting[item.Category] = item.Total;
+            }
+        }
+    }
+    else
+    {
+        Console.WriteLine("Your list is empty");
+        return;
+    }
+    foreach (KeyValuePair<string, double> pair in counting)
+    {
+        Console.WriteLine($"{pair.Key}: {pair.Value} kr");
+    }
+}
+
 void SaveItems(List<ShoppingItem> it)
 {
     File.WriteAllText("shopping.txt", "");
     foreach (ShoppingItem item in it)
     {
-        File.AppendAllText("shopping.txt", $"{item.Name};{item.Quantity};{item.Price}\n");
+        File.AppendAllText("shopping.txt", $"{item.Name};{item.Quantity};{item.Price};{item.Category}\n");
     }
 }
 
@@ -52,9 +83,9 @@ void LoadItems(List<ShoppingItem> it)
         foreach (string line in lines)
         {
             string[] parts = line.Split(';');
-            if (parts.Length == 3 && int.TryParse(parts[1], out int parsedQuantity) && double.TryParse(parts[2], out double parsedPrice))
+            if (parts.Length == 4 && int.TryParse(parts[1], out int parsedQuantity) && double.TryParse(parts[2], out double parsedPrice))
             {
-                it.Add(new ShoppingItem(parts[0], parsedQuantity, parsedPrice));
+                it.Add(new ShoppingItem(parts[0], parsedQuantity, parsedPrice, parts[3]));
             }
             else
             {
@@ -76,7 +107,8 @@ void PrintMenu()
     Console.WriteLine("3. Remove Item");
     Console.WriteLine("4. Totals");
     Console.WriteLine("5. Search");
-    Console.WriteLine("6. Quit");
+    Console.WriteLine("6. Totals per category");
+    Console.WriteLine("7. Quit");
     Console.Write("Choose: ");
 }
 
@@ -113,7 +145,9 @@ void AddItem(List<ShoppingItem> it)
         Console.WriteLine("Not a valid number");
         return;
     }
-    it.Add(new ShoppingItem(item, quantity, price));
+    Console.Write("Category: ");
+    string category = Console.ReadLine() ?? "";
+    it.Add(new ShoppingItem(item, quantity, price, category));
     Console.WriteLine(it[it.Count - 1].Describe());
 }
 
@@ -195,15 +229,27 @@ class ShoppingItem
 
     public double Total => Price * Quantity;
 
-    public ShoppingItem(string name, int quantity, double price)
+    private string category = "";
+    public string Category
+    {
+        get { return category; }
+        set
+        {
+            if (value == "") category = "other";
+            else { category = value.ToLower(); }
+        }
+    }
+
+    public ShoppingItem(string name, int quantity, double price, string category)
     {
         Name = name;
         Quantity = quantity;
         Price = price;
+        Category = category;
     }
 
     public string Describe()
     {
-        return $"{Quantity} x {Name} = {Total} kr";
+        return $"{Quantity} x {Name} = {Total} kr ({Category})";
     }
 }
